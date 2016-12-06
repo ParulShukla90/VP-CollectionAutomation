@@ -1,0 +1,34 @@
+{
+  "name": "taxiapp",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "angular-ui-grid": "^3.0.7",
+    "apn": "^1.7.5",
+    "body-parser": "~1.13.2",
+    "braintree": "^1.37.1",
+    "cookie-parser": "~1.3.5",
+    "cors": "^2.7.1",
+    "debug": "~2.2.0",
+    "express": "~4.13.1",
+    "jade": "~1.11.0",
+    "jwt-simple": "^0.5.0",
+    "moment": "^2.12.0",
+    "mongoose": "^4.4.12",
+    "mongoose-unique-validator": "^0.4.1",
+    "morgan": "~1.6.1",
+    "node-gcm": "^0.14.0",
+    "nodemailer": "^1.8.0",
+    "nodemailer-smtp-transport": "^1.0.3",
+    "passport": "^0.3.2",
+    "passport-http": "^0.3.0",
+    "passport-local": "^1.0.0",
+    "paypal-rest-sdk": "^1.6.8",
+    "request": "^2.71.0",
+    "serve-favicon": "~2.3.0",
+    "stripe": "^4.5.0"
+  }
+}

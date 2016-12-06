@@ -1,0 +1,128 @@
+<aside class="right-side" ng-init="getClientToken()">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>
+                        Card
+                    </h1>
+                    <ol class="breadcrumb">
+                        <li><a href="/#/home"><i class="fa fa-dashboard"></i> Home</a></li>
+                        <li><a href="/#/payment">payment</a></li> 
+                         <li>Add</li>                      
+                    </ol>
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <div class="row">
+                        <div class="col-xs-12">
+
+                            <div class="box">
+                                    
+                                <!-- <div class="box-header">
+                                    <h3 class="box-title">Data Table With Full Features</h3>
+                                </div> -->
+                                <div class="box-body table-responsive">
+                                    <div class="alert alert-danger alert-dismissable" ng-show="message"><button class="close" aria-hidden="true" data-dismiss="alert" type="button">×</button>{{message}}</div>  
+                                    <div data-ng-show="loading" class="loader-area">
+                                    <img src="/images/ajax-loader.gif" class="data-loader">
+                                   </div> 
+                            
+                <div class="box-body">
+                <label for="">Payment Gateway</label>
+                  <select ng-init="item=paymentType[0]" class="form-control"  ng-model="item" ng-change="changePaymentMethod(item)" ng-options="payment as payment.name for payment in paymentType" 
+                ></select>
+                 <form ng-if="itemKey === 0" name="myForm">
+                
+                 
+                <label for="">Card number</label>
+                <input type="text" class="form-control" ng-model="card.number" name="number"
+                       payments-validate="card" payments-format="card" payments-type-model="type" 
+                       payments-length="card" ng-class="type"/>
+                <label for="">Expiry</label>
+                <input type="text" class="form-control" ng-model="card.expiry" name="expiry"
+                       payments-validate="expiry" payments-format="expiry" />
+                <label for="">Name on card </label>
+                <input type="text" ng-model="card.name" class="form-control">
+                <label for="">CVC</label>
+                <input type="text" class="form-control" ng-model="card.cvc" name="cvc"
+                 payments-validate="cvc" payments-format="cvc" payments-type-model="type"/>
+                <label for="">Amount($)</label>
+                <input type="text" class="form-control" payments-format="cvc"  ng-model="card.amount" name="amount"/>
+              <div class="box-footer">
+                <button type="button" class="btn btn-primary" ng-click="payButtonClicked()">Save</button>
+            </div>
+             
+            </form>         
+
+            <form stripe:form="saveCustomer" ng-if="itemKey === 1">
+            <fieldset>
+                <label for="">Cards number</label>
+                <input type="text" class="form-control" ng-model="card.number" name="number" data-stripe="number"
+               payments-validate="card" payments-format="card" payments-type-model="type" 
+               payments-length="card" ng-class="type"/>
+               <label for="">CVC</label>
+               <input type="text" class="form-control" ng-model="card.cvc" name="cvc" data-stripe="cvc"
+                payments-validate="cvc" payments-format="cvc" payments-type-model="type"/>
+               <label for="">Expiry</label>
+                <input type="text" class="form-control" ng-model="card.expiry" name="expiry" data-stripe="exp-month"
+                payments-validate="expiry" payments-format="expiry" ng-blur="getDate()" />
+                <label for="">Name on card </label>
+                <input type="text" ng-model="card.name" class="form-control">
+                <label for="">Amount($)</label>
+                <input type="text" class="form-control" ng-model="card.amount" name="amount"/>
+                <input type="text" ng-hide ="1" size="2" ng-model="month" data-stripe="exp-month"/>
+                <input type="text" ng-hide ="1" size="4" ng-model="year" data-stripe="exp-year"/>
+              </fieldset>
+               <div class="box-footer">
+                <button type="submit" class="btn btn-primary">Save</button>
+             </div>
+             
+             </form>  
+
+              <div ng-if="itemKey === 2" class="radio" ng-repeat="paypal in paypalType">
+               <label >
+                <input style= "margin-top: -5px;" name="response" type="radio" class="form-control" ng-model="paypalData.id" value="{{paypal.id}}" ng-click="getPaymentTypefromPaypal()">    {{paypal.name}} 
+                 </label>
+                 </div>
+              <form ng-if="paypentTypeForpaypal == 1" name="myForm">
+              <div class="form-group">
+                <label for="">Card number(Sandbox: 4032037797196710)</label>
+                <input type="text" class="form-control" ng-model="paypalCard.number" name="number"
+                       payments-validate="card" payments-format="card" payments-type-model="type" 
+                       payments-length="card" ng-class="type" ng-blur = "getType(type)"/>
+                <label for="">Expiry(Sandbox: 11/2019)</label>
+                <input type="text" class="form-control" ng-model="paypalCard.expiry" name="expiry"
+                       payments-validate="expiry" payments-format="expiry" ng-blur="getPaypalDate()" />
+                       <input type="text"  ng-hide ="1" size="2" ng-model="paypalCard.expire_month" />
+                        <input type="text"  ng-hide ="1" size="4" ng-model="paypalCard.expire_year" />
+                <label for="">First name </label>
+                <input type="text" ng-model="paypalCard.first_name" class="form-control">
+                  <label for="">Last name </label>
+                <input type="text" ng-model="paypalCard.last_name" class="form-control">
+                <label for="">CVC(Sandbox: 123)</label>
+                <input type="text" class="form-control" ng-model="paypalCard.cvv2" name="cvc"
+                 payments-validate="cvc" payments-format="cvc" payments-type-model="type"/>
+                <label for="">Amount($)</label>
+                <input type="text" class="form-control" ng-model="paypalCard.amount" name="amount"/>
+              <div class="box-footer">
+                <button type="button" class="btn btn-primary" ng-click="payPalButtonClicked(1)">Save</button>
+            </div>
+            </div>
+            </form>  
+            <form ng-if="paypentTypeForpaypal == 2" name="myForm">
+              <div class="form-group">
+                <label for="">Amount($)</label>
+                <input type="text" class="form-control" payments-format="cvc" ng-model="paypalCard.amount" name="amount"/>
+              <div class="box-footer">
+                <button type="button" class="btn btn-primary" ng-click="payPalButtonClicked(2)">Save</button>
+            </div>
+             </div>
+            </form>  
+                               </div>
+                                  
+                                </div><!-- /.box-body -->
+                            </div><!-- /.box -->
+                        </div>
+                    </div>
+
+                </section><!-- /.content -->
+            </aside><!-- /.right-side -->
