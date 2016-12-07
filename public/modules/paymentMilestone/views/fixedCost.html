@@ -1,3 +1,43 @@
-<div class="row" ng-if="selectedProject.originalObject">
-	<div class="col-md-12">Fixed Cost</div>
+<div class="row paddingTop25" ng-if="selectedProject.originalObject">
+	<div class="col-md-12">
+		<h1> Payment milestones for fixed cost milestone based projects</h1>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Total hours :</label><label class="form-control left80">{{selectedProject.originalObject.totalHours}} Hrs</label>
+		</div>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Hours included in milestones :</label><label class="form-control left80">  {{occupiedHrs}} Hrs</label>
+		</div>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Daily limit(Hrs) : </label> <input max-num max="9" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.dailyLimit" ng-change="reCalcHourlyData()"/> 
+		</div>
+		<form name="hourly">
+			<table  class="table table-striped table-hover hourlyTable">
+				<tr>
+					<th>Title</th>
+					<!--<th>Holidays</th>-->
+					<th>Collection Day(Fri)</th>
+					<th>Resources<input class="form-control right20" type="number" max-num max="15" ng-model="parentResource" width="30px" ng-change="parentResourceChange('fcmData')"/></th>
+					<th>Working days</th>
+					<th>Hours to bill</th>
+					<th>Collectable Amount $</th>
+					<th></th>
+				</tr>
+				<tr ng-repeat="week in hourlyData">
+						<td>{{week.name}}</td>
+						<!--<td class="center width100px"><input max-num max="{{week.days}}" type="number" class="form-control" ng-model="hourlyData[$index].holidays" ng-change="reCalcHourlyData()" ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate"/></td>-->
+						<td>{{week.date | date : 'MMM d, y'}}</td>
+						<!--<td class="center">{{week.resources}}</td>-->
+						<td class="center width100px"><input max-num max="15" type="number" class="form-control" ng-model="hourlyData[$index].resources" ng-change="reCalcHourlyData()"  ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate"/></td>
+						<td class="center">{{week.days - week.holidays}}</td>
+						<td class="center">{{week.hrsThisWeek}}</td>
+						<td ng-if="week.hrsThisWeek >= (week.resources* week.dailyLimit * (week.days- week.holidays))">{{week.resources * (week.days- week.holidays) * week.dailyLimit * week.hourlyRate}}</td>
+						<td ng-if="week.hrsThisWeek < (week.resources* week.dailyLimit * (week.days- week.holidays))">{{ week.hrsThisWeek * week.hourlyRate}}</td>
+						<!--<td><a ng-if="($index+1)==hourlyData.length" class="curPointer" ng-click="addNewMilestone()">Add More +</a></td>-->
+				</tr>
+			</table>
+			<div class="form-group">
+				<button ng-disabled="!(hourlyData.length > 0) " class="btn btn-info col-md-12 btn-large" ng-click="saveHrlyMilestones()">Save Payment Schedule</button>
+			</div>
+		</form>
+	</div>
 </div>
