@@ -10,25 +10,11 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 	type: 1 -FC(Milestone) , 2 - hr, 3 - MM, 4- FC(Hourly)
 	tech: 1 - OS, 2 - MG, 3 - MS, 4 - BD, 5 - Ionic
 	*/
-	var milestones = [
-		{title : 'Milestone 1'},
-		{title : 'Milestone 2'},
-		{title : 'Milestone 3'},
-		{title : 'Milestone 4'},
-		{title : 'Milestone 5'},
-		{title : 'Milestone 6'},
-		{title : 'Milestone 7'},
-		{title : 'Milestone 8'},
-		{title : 'Milestone 9'},
-		{title : 'Milestone 10'},
-	];
-	
 	$scope.projects.val = [
-		{_id:1,name:'LifeShareCare FC',budget: 22000,type:1,startDate:new Date('09/09/2016').setHours(0,0,0,0),endDate:new Date('02/12/2017').setHours(0,0,0,0),bdg : 'Rohit Verma',resources:2,tech:4,advance : 0,totalHours:1200,dailyLimit : 9,milestones : milestones},
+		{_id:1,name:'LifeShareCare FC',budget: 22000,type:1,startDate:new Date('09/09/2016').setHours(0,0,0,0),endDate:new Date('02/12/2017').setHours(0,0,0,0),bdg : 'Rohit Verma',resources:2,tech:4,advance : 20,totalHours:1200,dailyLimit : 9},
 		{_id:2,name:'Echolimousine TSK',budget: 25000,type:2,startDate:new Date('11/10/2016').setHours(0,0,0,0),endDate:new Date('02/02/2017').setHours(0,0,0,0),bdg : 'Nidhi Thakur',resources:2,tech:4,hourlyRate:12,totalHours:500,dailyLimit : 9},
 		{_id:3,name: 'CollabMedia MM',budget:30000,type:3,startDate:new Date('07/09/2016').setHours(0,0,0,0),endDate:new Date('01/12/2017').setHours(0,0,0,0),bdg : 'Rahul Sharma',resources:3,tech:4}
 	]
-	
 	/*Default functionality running for session management*/
 	if($localStorage.userLoggedIn) {
 		$rootScope.userLoggedIn = true;
@@ -149,12 +135,21 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 		var data = angular.copy($scope.selectedProject.originalObject);
 		var i = 0;
 		var weeklydataLength = $scope.fcmData.length;
+		var paymentPerMilestone = data.budget/weeklydataLength;
 		var advance = data.budget*(data.advance/100);
-		var paymentPerMilestone = (data.budget-advance)/(weeklydataLength-1);
-		$scope.fcmData[0].payment = 0;
-		if(weeklydataLength >1){
-			for(i =1; i < weeklydataLength; i++){
-				$scope.fcmData[i].payment = paymentPerMilestone;
+		//console.log('paymentPerMilestone',paymentPerMilestone);
+		for(i =0; i < weeklydataLength; i++){
+			//console.log('advance',advance);
+			if(advance >= paymentPerMilestone){
+				$scope.fcmData[i].payment = 0;
+				advance = advance - paymentPerMilestone;
+			}else{
+				if(advance > 0){
+					$scope.fcmData[i].payment = paymentPerMilestone - advance;
+					advance = 0;
+				}else{
+					$scope.fcmData[i].payment = paymentPerMilestone;
+				}
 			}
 		}
 		$scope.getAllWeeksFCM();
@@ -222,22 +217,20 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 			if(data.endDate <= lastDate){
 				lastDate = 	data.endDate;
 				temp.days = (lastDate.day()-currentDayOfWeek)+1;
+				temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
 				temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);	
 			}
 			temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
-			if(weeks > 1){
+			if(weeks == 2){
 				//if(($scope.totalHrs - $scope.occupiedHrs) > (temp.days *  temp.resources * temp.dailyLimit)){
-					var x=1;
-					for(x = 1; x < weeks; x++){
-						lastDate = lastDate.day(12);
-						currentDayOfWeek = 1;
-						if(data.endDate <= lastDate){
-							lastDate = 	data.endDate;
-							temp.days = temp.days + (lastDate.day()-currentDayOfWeek)+1;
-							break;
-						}else{
-							temp.days = temp.days+(5-currentDayOfWeek)+1;
-						}
+					lastDate = lastDate.day(12);
+					currentDayOfWeek = 1;
+					if(data.endDate <= lastDate){
+						lastDate = 	data.endDate;
+						temp.days = temp.days + (lastDate.day()-currentDayOfWeek)+1;
+						
+					}else{
+						temp.days = temp.days+(5-currentDayOfWeek)+1;
 					}
 				//}
 			}
