@@ -2,7 +2,7 @@ taxiapp.directive('maxNum', function($filter, $browser) {
     return {
         require: 'ngModel',
         link: function($scope, $element, $attrs, ngModelCtrl) {
-            console.log('input linked');
+            //console.log('input linked');
             var listener = function() {
                 var value = $element.val().replace(/[^0-9]/g, '').slice(0,3);
                 //console.log(value);
@@ -11,7 +11,7 @@ taxiapp.directive('maxNum', function($filter, $browser) {
                 if(parseInt(value) > max){
                     $element.val(max);
                 }else if(value<=0){
-                    $element.val(1);
+                    $element.val(0);
                 }
                 else{ 
                     $element.val(value);

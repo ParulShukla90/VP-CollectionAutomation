@@ -4,14 +4,16 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 	$scope.selectedProject = {};
 	$scope.projects = {};
 	$scope.currDate = new Date();
+	$scope.parentResource = {};
+	$scope.fcmData = [];
 	/*
 	type: 1 -FC(Milestone) , 2 - hr, 3 - MM, 4- FC(Hourly)
 	tech: 1 - OS, 2 - MG, 3 - MS, 4 - BD, 5 - Ionic
 	*/
 	$scope.projects.val = [
-		{_id:1,name:'LifeShareCare FC',budget: 22000,type:1,startDate:new Date('09/09/2016'),endDate:new Date('12/12/2016'),bdg : 'Rohit Verma',resources:2,tech:4,advance : 20},
-		{_id:2,name:'Echolimousine TSK',budget: 25000,type:2,startDate:new Date('11/10/2016'),endDate:new Date('02/02/2017'),bdg : 'Nidhi Thakur',resources:2,tech:4,hourlyRate:12,totalHours:500,dailyLimit : 9},
-		{_id:3,name: 'CollabMedia MM',budget:30000,type:3,startDate:new Date('07/09/2016'),endDate:new Date('01/12/2017'),bdg : 'Rahul Sharma',resources:3,tech:4}
+		{_id:1,name:'LifeShareCare FC',budget: 22000,type:1,startDate:new Date('09/09/2016').setHours(0,0,0,0),endDate:new Date('02/12/2017').setHours(0,0,0,0),bdg : 'Rohit Verma',resources:2,tech:4,advance : 20,totalHours:1200,dailyLimit : 9},
+		{_id:2,name:'Echolimousine TSK',budget: 25000,type:2,startDate:new Date('11/10/2016').setHours(0,0,0,0),endDate:new Date('02/02/2017').setHours(0,0,0,0),bdg : 'Nidhi Thakur',resources:2,tech:4,hourlyRate:12,totalHours:500,dailyLimit : 9},
+		{_id:3,name: 'CollabMedia MM',budget:30000,type:3,startDate:new Date('07/09/2016').setHours(0,0,0,0),endDate:new Date('01/12/2017').setHours(0,0,0,0),bdg : 'Rahul Sharma',resources:3,tech:4}
 	]
 	/*Default functionality running for session management*/
 	if($localStorage.userLoggedIn) {
@@ -24,11 +26,12 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 	
 	/* function that is called when selected project is changed*/
 	$scope.onProjectChange = function(){
-		console.log('selectedProject',$scope.selectedProject);
-		var data = angular.copy($scope.selectedProject.originalObject);
-		data.startDate = moment(data.startDate);
-		data.endDate = moment(data.endDate);
 		if($scope.selectedProject.hasOwnProperty('originalObject')){
+			//console.log('selectedProject',$scope.selectedProject);
+			var data = angular.copy($scope.selectedProject.originalObject);
+			data.startDate = moment(data.startDate);
+			data.endDate = moment(data.endDate);
+			$scope.parentResource.val = $scope.selectedProject.originalObject.resources;
 			switch($scope.selectedProject.originalObject.type){
 				case 1:
 					//get fixed cost  milestone data
@@ -64,7 +67,6 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 		}
 		var flag = false;
 		var weeklyData = [];
-		//var totalHrs =
 		var index = 1;
 		var lastDate = null;
 		$scope.occupiedHrs = 0;
@@ -81,26 +83,35 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 				lastDate = data.startDate.day(5);
 			}
 			temp.days = (5-currentDayOfWeek)+1;
-			temp.date = new Date(lastDate);
-			//temp.holidays = 0;
+			temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
+			temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);
+			temp.weeks = 1;
+			temp.holidays = 0;
 			//temp.hourlyRate = data.hourlyRate;
 			temp.resources = parseInt(data.resources);
 			temp.dailyLimit = data.dailyLimit;
 			if(data.endDate <= lastDate){
 				lastDate = 	data.endDate;
 				temp.days = (lastDate.day()-currentDayOfWeek)+1;
-				temp.date = new Date(lastDate);	
+				temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
+				temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);	
 			}
+			temp.acceptance = new Date(lastDate.days(5)).setDate(new Date(temp.date).getDate() + 14);
+			temp.acceptance = new Date(temp.acceptance).setHours(0,0,0,0);
+			//temp.acceptance = temp.acceptance.setDate(temp.acceptance.getDate() + 14);
 			if($scope.occupiedHrs < $scope.totalHrs){
 				if(($scope.totalHrs - $scope.occupiedHrs) > (temp.days *  temp.resources * temp.dailyLimit)){
+					//console.log(1);
 					temp.hrsThisWeek = temp.days *  temp.resources * temp.dailyLimit;
 					$scope.occupiedHrs = $scope.occupiedHrs +(temp.days *  temp.resources * temp.dailyLimit);
 				}else{
 					temp.hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
 					$scope.occupiedHrs = $scope.occupiedHrs + ($scope.totalHrs - $scope.occupiedHrs);
+					//console.log(2);
 					flag = true;
 				}
 			}else{
+				console.log(3);
 				temp.hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
 				$scope.occupiedHrs = $scope.occupiedHrs + ($scope.totalHrs - $scope.occupiedHrs);
 				flag = true;
@@ -110,11 +121,258 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 			if(lastDate < data.endDate ){
 				
 			}else{
+				console.log(4);
 				flag = true;
 			}
 		}
-		$scope.fcmData = weeklyData;
 		
+		$scope.fcmData = weeklyData;
+		$scope.setPaymentsFC();
+	}
+	
+	/* function to set payment to be recieved for each payment milestone*/
+	$scope.setPaymentsFC = function(){
+		var data = angular.copy($scope.selectedProject.originalObject);
+		var i = 0;
+		var weeklydataLength = $scope.fcmData.length;
+		var paymentPerMilestone = data.budget/weeklydataLength;
+		var advance = data.budget*(data.advance/100);
+		//console.log('paymentPerMilestone',paymentPerMilestone);
+		for(i =0; i < weeklydataLength; i++){
+			//console.log('advance',advance);
+			if(advance >= paymentPerMilestone){
+				$scope.fcmData[i].payment = 0;
+				advance = advance - paymentPerMilestone;
+			}else{
+				if(advance > 0){
+					$scope.fcmData[i].payment = paymentPerMilestone - advance;
+					advance = 0;
+				}else{
+					$scope.fcmData[i].payment = paymentPerMilestone;
+				}
+			}
+		}
+		$scope.getAllWeeksFCM();
+	}
+	
+	
+	/* */
+	$scope.addWeekFCM = function(index){
+		if(($scope.fcmData.length -1) == index){
+			alert('You can not add week to this milestone');
+			return;
+		}
+		$scope.fcmData[index].weeks = 2;
+		$scope.addRemWeekFCM();
+	}
+	$scope.removeWeekFCM = function(index){
+		$scope.fcmData[index].weeks = 1;
+		$scope.addRemWeekFCM();
+	}
+	
+	$scope.getAllWeeksFCM = function(){
+		var i = 0;
+		var fcmLength = $scope.fcmData.length;
+		var start = moment($scope.fcmData[0].date);
+		var end = moment($scope.fcmData[fcmLength-1].date);
+		end = end.add(14,'days');
+		$scope.fcmWeeks = [];
+		while(start <= end){
+			var temp = {};
+			temp.start = new Date(start.days(1)).setHours(0,0,0,0);
+			temp.end = new Date(start.days(5)).setHours(0,0,0,0);
+			start = start.add(7,'days');
+			$scope.fcmWeeks.push(temp);
+		}
+	}
+	
+	
+	$scope.addRemWeekFCM = function(){
+		var data = angular.copy($scope.selectedProject.originalObject);
+		data.startDate = moment(data.startDate);
+		data.endDate = moment(data.endDate);
+		var flag = false;
+		var weeklyData = [];
+		var index = 1;
+		var lastDate = null;
+		$scope.occupiedHrs = 0;
+		$scope.totalHrs = data.totalHours;
+		while(flag == false){
+			var temp = {};
+			temp.name = 'Milestone '+ index;
+			var weeks = $scope.fcmData[index-1] ? $scope.fcmData[index-1].weeks : 1 ;
+			var currentDayOfWeek;
+			if(lastDate){
+				lastDate = lastDate.day(12);
+				currentDayOfWeek = 1;
+			}else{
+				currentDayOfWeek = data.startDate.day();
+				lastDate = data.startDate.day(5);
+			}
+			temp.days = (5-currentDayOfWeek)+1;
+			temp.weeks = weeks;
+			temp.holidays = $scope.fcmData[index-1]?$scope.fcmData[index-1].holidays : 0;
+			temp.resources = parseInt($scope.fcmData[index-1] ? $scope.fcmData[index-1].resources : data.resources);
+			temp.dailyLimit = data.dailyLimit;
+			if(data.endDate <= lastDate){
+				lastDate = 	data.endDate;
+				temp.days = (lastDate.day()-currentDayOfWeek)+1;
+				temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
+				temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);	
+			}
+			temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
+			if(weeks == 2){
+				//if(($scope.totalHrs - $scope.occupiedHrs) > (temp.days *  temp.resources * temp.dailyLimit)){
+					lastDate = lastDate.day(12);
+					currentDayOfWeek = 1;
+					if(data.endDate <= lastDate){
+						lastDate = 	data.endDate;
+						temp.days = temp.days + (lastDate.day()-currentDayOfWeek)+1;
+						
+					}else{
+						temp.days = temp.days+(5-currentDayOfWeek)+1;
+					}
+				//}
+			}
+			temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);
+			temp.acceptance = new Date(lastDate.days(5)).setDate(new Date(temp.date).getDate() + 14);
+			temp.acceptance = new Date(temp.acceptance).setHours(0,0,0,0);
+			//temp.acceptance = temp.acceptance.setDate(temp.acceptance.getDate() + 14);
+			if($scope.occupiedHrs < $scope.totalHrs){
+				//console.log(temp.days,' *  ',temp.resources,' * ',temp.dailyLimit)
+				if(($scope.totalHrs - $scope.occupiedHrs) > (temp.days *  temp.resources * temp.dailyLimit)){
+					console.log(1);
+					temp.hrsThisWeek = temp.days *  temp.resources * temp.dailyLimit;
+					$scope.occupiedHrs = $scope.occupiedHrs +temp.hrsThisWeek;
+				}else{
+					console.log(2);
+					temp.hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
+					$scope.occupiedHrs = $scope.occupiedHrs + temp.hrsThisWeek;
+					flag = true;
+				}
+			}else{
+				
+				console.log(3);
+				temp.hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
+				$scope.occupiedHrs = $scope.occupiedHrs + temp.hrsThisWeek;
+				flag = true;
+			}
+			weeklyData.push(temp);
+			index++;
+			if(lastDate < data.endDate ){
+				
+			}else{
+				console.log(4);
+				flag = true;
+			}
+		}
+		
+		$scope.fcmData = weeklyData;
+		$scope.setPaymentsFC();
+	}
+	/**/
+	$scope.reCalcFCMData = function(){
+		var data = angular.copy($scope.selectedProject.originalObject);
+		data.startDate = moment(data.startDate);
+		data.endDate = moment(data.endDate);
+		$scope.occupiedHrs = 0;
+		$scope.totalHrs = data.totalHours;
+		for(var i = 0; i< $scope.fcmData.length; i++){
+			if(data.paymentSchedule){
+				if($scope.fcmData[i].date >= $scope.currDate){
+					$scope.fcmData[i].dailyLimit = data.dailyLimit;
+				}
+			}else{
+				$scope.fcmData[i].dailyLimit = data.dailyLimit;
+			}
+			console.log($scope.occupiedHrs,'< ',$scope.totalHrs)
+			if($scope.occupiedHrs < $scope.totalHrs){
+				if(($scope.totalHrs - $scope.occupiedHrs) > (($scope.fcmData[i].days - $scope.fcmData[i].holidays) *  $scope.fcmData[i].resources * $scope.fcmData[i].dailyLimit)){
+					if(!data.paymentSchedule || $scope.fcmData[i].date >= $scope.currDate){
+						$scope.fcmData[i].hrsThisWeek = ($scope.fcmData[i].days - $scope.fcmData[i].holidays) *  $scope.fcmData[i].resources * $scope.fcmData[i].dailyLimit;
+					}
+				}else{
+					if(!data.paymentSchedule || $scope.fcmData[i].date >= $scope.currDate){
+						$scope.fcmData[i].hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
+					}
+				}
+				$scope.occupiedHrs = $scope.occupiedHrs + $scope.fcmData[i].hrsThisWeek;
+			}else{
+				$scope.fcmData.splice(i,1);
+				i--;
+				console.log('error--- come check ')
+			}
+		}
+		if($scope.occupiedHrs < $scope.totalHrs){
+			var flag = false;
+			var index = $scope.fcmData.length +1;
+			var lastDate = moment($scope.fcmData[$scope.fcmData.length-1].date);
+			while(flag == false){
+				var temp = {};
+				temp.name = 'Milestone '+ index;
+				var currentDayOfWeek;
+				if(lastDate){
+					lastDate = lastDate.day(12);
+					currentDayOfWeek = 1;
+				}else{
+					currentDayOfWeek = data.startDate.day();
+					lastDate = data.startDate.day(5);
+				}
+				temp.days = (5-currentDayOfWeek)+1;
+				temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
+				temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);
+				temp.weeks = 1;
+				temp.holidays = 0;
+				temp.resources = parseInt($scope.parentResource.val);
+				temp.dailyLimit = data.dailyLimit;
+				if(data.endDate <= lastDate){
+					lastDate = 	data.endDate;
+					temp.days = (lastDate.day()-currentDayOfWeek)+1;
+					temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
+					temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);
+				}
+				if($scope.occupiedHrs < $scope.totalHrs){
+					if(($scope.totalHrs - $scope.occupiedHrs) > (temp.days *  temp.resources * temp.dailyLimit)){
+						temp.hrsThisWeek = temp.days *  temp.resources * temp.dailyLimit;
+						$scope.occupiedHrs = $scope.occupiedHrs +(temp.days *  temp.resources * temp.dailyLimit);
+					}else{
+						temp.hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
+						$scope.occupiedHrs = $scope.occupiedHrs + ($scope.totalHrs - $scope.occupiedHrs);
+						flag = true;
+					}
+				}else{
+					temp.hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
+					$scope.occupiedHrs = $scope.occupiedHrs + ($scope.totalHrs - $scope.occupiedHrs);
+					flag = true;
+				}
+				$scope.fcmData.push(temp);
+				index++;
+				if(lastDate < data.endDate ){
+					
+				}else{
+					console.log(4);
+					flag = true;
+				}
+			}
+		}
+		$scope.setPaymentsFC();
+	}
+	
+	/* save payment scheduile for houly projects */
+	$scope.saveFCMMilestones = function(){
+		var i = 0;
+		var j = 0;
+		var index ;
+		for(i =0; i < $scope.fcmData.length; i++ ){
+			for(j = 0; j < $scope.projects.val.length;j++){
+				if($scope.selectedProject.originalObject._id == $scope.projects.val[j]._id){
+					index = j;
+				}
+			}
+		}
+		$scope.projects.val[index].paymentSchedule = $scope.fcmData;
+		alert('Payment schedule has been saved successfully');
+		$scope.selectedProject = {};
 	}
 	
 	/*======================================================================================*/
@@ -296,18 +554,29 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 	
 	/* */
 	$scope.parentResourceChange = function(type){
-		console.log($scope[type].length,type)
+		console.log($scope[type].length,type,$scope.parentResource.val)
 		var data = angular.copy($scope.selectedProject.originalObject);
 		for(var i = 0; i< $scope[type].length; i++){
 			if(data.paymentSchedule){
 				if($scope[type][i].date >= $scope.currDate){
-					$scope[type][i].resources = $scope.parentResource;
+					$scope[type][i].resources = $scope.parentResource.val;
 				}
 			}else{
 				//fresh case
-				console.log($scope[type][i].resources,$scope.parentResource)
-				$scope[type][i].resources = $scope.parentResource;
+				console.log($scope[type][i].resources,$scope.parentResource.val)
+				$scope[type][i].resources = $scope.parentResource.val;
+				console.log($scope[type][i].resources);
 			}
+		}
+		switch(type){
+			case 'hourlyData' :
+				$scope.reCalcHourlyData();
+				break;
+			case 'fcmData' :
+				$scope.reCalcFCMData();
+				break;
+			default:
+				break;
 		}
 	}
 	

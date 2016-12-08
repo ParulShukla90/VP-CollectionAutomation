@@ -9,7 +9,7 @@
      padding-top: 25px;
 }
 .center{
-     text-align: center;
+     text-align: center !important;
 }
 .width100px{
      width: 100px;
@@ -29,13 +29,33 @@
 .hourlyTable th{
      width: 17%;
 }
+.FCMTable th{
+     width: 10%;
+}
 .projTable th{
      width: 12%;
 }
 .right20{
      float: right;
-     width: 50% !important;
+     width: 100% !important;
 }
 th,td{
      vertical-align: middle !important;
+}
+.table{
+     margin-bottom: 20px !important;
+     margin-top: 30px;
+}
+.carrot{
+     background-color: #e67e22 !important;
+}
+.blue{
+     background-color: #2980b9 !important;
+}
+.scrollableTable {
+    width: 100%;
+    overflow: auto;
+}
+.scrollableTable tr td:first-child {
+    color: red;
 }

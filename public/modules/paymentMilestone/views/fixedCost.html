@@ -8,35 +8,72 @@
 			<label class="form-control left10">Hours included in milestones :</label><label class="form-control left80">  {{occupiedHrs}} Hrs</label>
 		</div>
 		<div class="form-group clearfix">
+			<label class="form-control left10">Project advance(%) : </label> <input max-num max="50" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.advance" ng-change="setPaymentsFC()"/> 
+		</div>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Project advance($) : </label><label class="form-control left80">{{(selectedProject.originalObject.budget) * (selectedProject.originalObject.advance/100)}}</label>  
+		</div>
+		<div class="form-group clearfix">
 			<label class="form-control left10">Daily limit(Hrs) : </label> <input max-num max="9" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.dailyLimit" ng-change="reCalcHourlyData()"/> 
 		</div>
 		<form name="hourly">
-			<table  class="table table-striped table-hover hourlyTable">
+			<table  class="table table-striped table-hover table-bordered FCMTable">
 				<tr>
 					<th>Title</th>
-					<!--<th>Holidays</th>-->
+					<th>Holidays</th>
+					<th>#Weeks</th>
 					<th>Collection Day(Fri)</th>
-					<th>Resources<input class="form-control right20" type="number" max-num max="15" ng-model="parentResource" width="30px" ng-change="parentResourceChange('fcmData')"/></th>
-					<th>Working days</th>
-					<th>Hours to bill</th>
-					<th>Collectable Amount $</th>
-					<th></th>
+					<th>Resources<input class="form-control right20" type="number" max-num max="15" ng-model="parentResource.val" width="30px" ng-change="parentResourceChange('fcmData')"/></th>
+					<th class="center">Working days</th>
+					<th class="center">Hours to bill</th>
+					<th class="center">Collectable Amount $</th>
+					<td>Alter #Weeks</td>
 				</tr>
-				<tr ng-repeat="week in hourlyData">
+				<tr ng-repeat="week in fcmData">
 						<td>{{week.name}}</td>
-						<!--<td class="center width100px"><input max-num max="{{week.days}}" type="number" class="form-control" ng-model="hourlyData[$index].holidays" ng-change="reCalcHourlyData()" ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate"/></td>-->
+						<td class="center width100px"><input max-num max="{{week.days}}" type="number" class="form-control" ng-model="fcmData[$index].holidays" ng-change="reCalcFCMData()" ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate"/></td>
+						<td class="center">{{week.weeks}}</td>
 						<td>{{week.date | date : 'MMM d, y'}}</td>
-						<!--<td class="center">{{week.resources}}</td>-->
-						<td class="center width100px"><input max-num max="15" type="number" class="form-control" ng-model="hourlyData[$index].resources" ng-change="reCalcHourlyData()"  ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate"/></td>
+						<td class="center width100px"><input max-num max="15" type="number" class="form-control" ng-model="fcmData[$index].resources" ng-change="reCalcFCMData()"  ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate"/></td>
 						<td class="center">{{week.days - week.holidays}}</td>
 						<td class="center">{{week.hrsThisWeek}}</td>
-						<td ng-if="week.hrsThisWeek >= (week.resources* week.dailyLimit * (week.days- week.holidays))">{{week.resources * (week.days- week.holidays) * week.dailyLimit * week.hourlyRate}}</td>
-						<td ng-if="week.hrsThisWeek < (week.resources* week.dailyLimit * (week.days- week.holidays))">{{ week.hrsThisWeek * week.hourlyRate}}</td>
-						<!--<td><a ng-if="($index+1)==hourlyData.length" class="curPointer" ng-click="addNewMilestone()">Add More +</a></td>-->
+						<td class="center"> {{week.payment | currency}}</td>
+						<td>
+							<button ng-if="week.weeks == 1" class="btn btn-info curPointer" ng-click="addWeekFCM($index)" ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate">Add Week</button>
+							<button ng-if="week.weeks == 2" class="btn btn-danger curPointer" ng-click="removeWeekFCM($index)" ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate">Remove Week</button>
+						</td>
 				</tr>
 			</table>
+			<div class="scrollableTable">
+				<table class="table table-striped table-hover table-bordered">
+					<tr>
+						<td class="center">/</td>
+						<td ng-repeat="fw in fcmWeeks">{{fw.end | date : 'MMM d, y'}}</td>
+					</tr>
+					<tr>
+						<td>Advance</td>
+						<td class="blue">{{(selectedProject.originalObject.budget) * (selectedProject.originalObject.advance/100) | currency}}</td>
+						<td class="center" ng-repeat="fw in fcmWeeks" ng-if="$index != 0"></td>
+					</tr>
+					<tr ng-repeat="fweek in fcmData">
+						<td>{{fweek.name}} </td>
+						<td title=" {{fw.end| date : 'MMM d, y'}}" class="center" ng-repeat="fw in fcmWeeks" abc=" {{fw.start}} == {{fweek.start}} || {{fw.end}} == {{fweek.date}}  " ng-class="{'carrot' : ( fw.start == fweek.start || fw.end == fweek.date  ),'blue' : (fw.end == fweek.acceptance && fweek.payment >=1)}">
+							<span ng-if="fweek.weeks ==1">
+								<span ng-if="fw.start == fweek.start || fw.end == fweek.date">Delivery</span>
+							</span>
+							<span ng-if="fweek.weeks ==2">
+								<span ng-if="fw.start == fweek.start" >In progress</span>
+								<span ng-if="fw.end == fweek.date"> Delivery</span>
+							</span>
+							<span ng-if="fw.end == fweek.acceptance && fweek.payment >=1">{{fweek.payment | currency}}</span>
+						</td>
+						<!--<td ng-if="fweek.weeks ==1" class="center" ng-repeat="fw in fcmWeeks" abc="({{fweek.date}} > {{fcmWeeks[$index-1].end}} && {{fw.start}} < {{fweek.date}} )" ng-class="{'carrot' : ( fw.start < fweek.date && fw.end >= fweek.date  )}"></td>-->
+						<!--<td ng-if="fweek.weeks ==2" class="center" ng-repeat="fw in fcmWeeks" abc="({{fweek.date}} > {{fcmWeeks[$index-1].end}} && {{fw.start}} < {{fweek.date}} )" ng-class="{'carrot' : ( fw.start < fweek.date && fw.end >= fweek.date  )}"></td>-->
+					</tr>
+				</table>
+			</div>
 			<div class="form-group">
-				<button ng-disabled="!(hourlyData.length > 0) " class="btn btn-info col-md-12 btn-large" ng-click="saveHrlyMilestones()">Save Payment Schedule</button>
+				<button ng-disabled="!(fcmData.length > 0) " class="btn btn-info col-md-12 btn-large" ng-click="saveFCMMilestones()">Save Payment Schedule</button>
 			</div>
 		</form>
 	</div>
