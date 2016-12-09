@@ -2,13 +2,7 @@
 	<div class="col-md-12">
 		<h1> Payment milestones for fixed cost milestone based projects</h1>
 		<div class="form-group clearfix">
-			<label class="form-control left10">Total hours :</label><label class="form-control left80">{{selectedProject.originalObject.totalHours}} Hrs</label>
-		</div>
-		<div class="form-group clearfix">
-			<label class="form-control left10">Hours included in milestones :</label><label class="form-control left80">  {{occupiedHrs}} Hrs</label>
-		</div>
-		<div class="form-group clearfix">
-			<label class="form-control left10">Project advance(%) : </label> <input max-num max="50" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.advance" ng-change="setPaymentsFC()"/> 
+			<label class="form-control left10">Project advance(%) : </label> <input ng-disabled="selectedProject.originalObject.paymentSchedule" max-num max="50" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.advance" ng-change="setPaymentsFC()"/> 
 		</div>
 		<div class="form-group clearfix">
 			<label class="form-control left10">Advance amount : </label><label class="form-control left80">{{(selectedProject.originalObject.budget) * (selectedProject.originalObject.advance/100) | currency}}</label>  
@@ -17,55 +11,45 @@
 		<!--	<label class="form-control left10">Daily limit(Hrs) : </label> <input max-num max="9" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.dailyLimit" ng-change="reCalcFCMData()"/> -->
 		<!--</div>-->
 		<form name="fcm">
-			<div class="scrollableTable tdwidth50">
-				<table  class="table table-striped table-hover table-bordered FCMTable">
-					<tr>
-						<th> Milestones</th>
-						<th ng-repeat="milestone in fcmData">{{milestone.name}}</th>
-					</tr>
-					<tr>
-						<th> #Sprints</th>
-						<td ng-repeat="milestone in fcmData"><input max-num max="4" type="number" class="form-control" ng-model="fcmData[$index].weeks" ng-change="addRemWeekFCM()"/></td>
-					</tr>
-					<tr>
-						<th> Collectible amount $</th>
-						<td ng-repeat="milestone in fcmData">{{milestone.payment | currency}}</td>
-					</tr>
-					<tr>
-						<th> Date</th>
-						<td ng-repeat="milestone in fcmData">{{milestone.date| date : 'MMM d, y'}}</td>
-					</tr>
-					<tr>
-						<th> Days</th>
-						<td ng-repeat="milestone in fcmData">{{milestone.days}}</td>
-					</tr>
-				</table>
-			</div>
-			<div class="outer">
-				<div class="inner">
-					<table class="table table-striped table-hover table-bordered">
-						<tr>
-							<td class="center">/</td>
-							<td ng-repeat="fw in fcmWeeks">{{fw.end | date : 'MMM d, y'}}</td>
-						</tr>
-						<tr>
-							<td>Advance</td>
-							<td class="blue">{{(selectedProject.originalObject.budget) * (selectedProject.originalObject.advance/100) | currency}}</td>
-							<td class="center" ng-repeat="fw in fcmWeeks" ng-if="$index != 0"></td>
-						</tr>
-						<tr ng-repeat="fweek in fcmData">
-							<td>{{fweek.name}} </td>
-							<td title=" {{fw.end| date : 'MMM d, y'}}" class="center" ng-repeat="fw in fcmWeeks"  ng-class="{'blue' : (fw.end == fweek.acceptance && fweek.payment >=1)}">
-								<span ng-if="fw.end == fweek.acceptance && fweek.payment >=1">{{fweek.payment | currency}}</span>
-							</td>
-							<!--<td ng-if="fweek.weeks ==1" class="center" ng-repeat="fw in fcmWeeks" abc="({{fweek.date}} > {{fcmWeeks[$index-1].end}} && {{fw.start}} < {{fweek.date}} )" ng-class="{'carrot' : ( fw.start < fweek.date && fw.end >= fweek.date  )}"></td>-->
-							<!--<td ng-if="fweek.weeks ==2" class="center" ng-repeat="fw in fcmWeeks" abc="({{fweek.date}} > {{fcmWeeks[$index-1].end}} && {{fw.start}} < {{fweek.date}} )" ng-class="{'carrot' : ( fw.start < fweek.date && fw.end >= fweek.date  )}"></td>-->
-						</tr>
-					</table>
+			<div class="form-group" ng-repeat="milestone in fcmData">
+				<div class="row">
+					<div ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
+						<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew" type="text" class="form-control" value="{{milestone.title}}"/>
+					</div>
+					<div ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
+						<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew"  type="number" step="0.01" currency-input class="form-control" ng-model="fcmData[$index].payment" ng-change="reCalcFcmPayments()" ng-model-options="{ debounce: 100 }"/>
+					</div>
+					<div ng-class="{'col-md-3':selectedProject.originalObject.paymentSchedule,'col-md-4':!selectedProject.originalObject.paymentSchedule}">
+						<div class="input-group">
+							<input ng-if="!selectedProject.originalObject.paymentSchedule || milestone.isNew " required ng-focus="fcmData[$index].isOpen = true" datepicker-options="dateOptions" type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="fcmData[$index].date" class="form-control" is-open="fcmData[$index].isOpen" show-weeks="false" min-date="currDate" show-button-bar="false" />
+							<input name="dateChange{{$index}}" ng-init="milestone.prevDate = milestone.date" ng-if="(selectedProject.originalObject.paymentSchedule && milestone.date >currDate &&  !milestone.isNew)" required ng-focus="fcmData[$index].isOpen = true" datepicker-options="dateOptions" type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="fcmData[$index].date" class="form-control" is-open="fcmData[$index].isOpen" show-weeks="false" min-date="currDate" show-button-bar="false" />
+							<label ng-if="selectedProject.originalObject.paymentSchedule && milestone.date <=currDate && !milestone.isNew" class="form-control" >{{milestone.date | date : 'MMM d, y'}}</label>
+							<span class="input-group-btn"  ng-click="milestone.isOpen = true">
+								<a type="button" class="btn btn-default"><i class="glyphicon glyphicon-calendar"></i></a>
+							</span>
+						</div>
+					</div>
+					<div ng-if="(selectedProject.originalObject.paymentSchedule && milestone.date >currDate) && milestone.prevDate != milestone.date && !milestone.isNew " class="col-md-3">
+						<select ng-model="fcmData[$index].reason" class="form-control" required>
+							<option value="1">Delay in milestone delivery.</option>
+							<option value="2">Client unavailable </option>
+							<option value="3">Client CC blocked </option>
+							<option value="4">Client CC verification pending </option>
+						</select>
+					</div>
+					<div class="col-md-2">
+						<div  ng-if="!selectedProject.originalObject.paymentSchedule || milestone.isNew" class="delIcon" ng-click="removeMilestone($index)" title="Delete milestone">
+							<i class="fa fa-times"></i>
+						</div>
+						<div class="addIcon" ng-click="addMilestone()" ng-if="$index == (fcmData.length-1)">
+							<i class="fa fa-plus" title="Add new milestone"></i>
+						</div>
+					</div>
 				</div>
+				
 			</div>
 			<div class="form-group">
-				<button ng-disabled="!(fcmData.length > 0) " class="btn btn-info col-md-12 btn-large" ng-click="saveFCMMilestones()">Save Payment Schedule</button>
+				<button ng-disabled="!(fcmData.length > 0) || fcm.$invalid " class="btn btn-info col-md-12 btn-large" ng-click="saveFCMMilestones()">Save Payment Schedule</button>
 			</div>
 		</form>
 	</div>

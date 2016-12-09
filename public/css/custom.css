@@ -62,3 +62,19 @@ th,td{
 .tdwidth50 td{
      min-width: 90px;
 }
+
+.delIcon , .addIcon{
+     width: 20px;
+     float: left;
+     border-radius: 10px;
+     color: #ffffff;
+     text-align: center;
+     margin: 5px;
+     cursor: pointer;
+}
+.delIcon{
+     background-color: red;
+}
+.addIcon{
+     background-color: green;
+}

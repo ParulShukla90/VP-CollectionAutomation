@@ -1,0 +1,72 @@
+<div class="row paddingTop25" ng-if="selectedProject.originalObject">
+	<div class="col-md-12">
+		<h1> Payment milestones for fixed cost milestone based projects</h1>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Total hours :</label><label class="form-control left80">{{selectedProject.originalObject.totalHours}} Hrs</label>
+		</div>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Hours included in milestones :</label><label class="form-control left80">  {{occupiedHrs}} Hrs</label>
+		</div>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Project advance(%) : </label> <input max-num max="50" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.advance" ng-change="setPaymentsFC()"/> 
+		</div>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Advance amount : </label><label class="form-control left80">{{(selectedProject.originalObject.budget) * (selectedProject.originalObject.advance/100) | currency}}</label>  
+		</div>
+		<!--<div class="form-group clearfix">-->
+		<!--	<label class="form-control left10">Daily limit(Hrs) : </label> <input max-num max="9" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.dailyLimit" ng-change="reCalcFCMData()"/> -->
+		<!--</div>-->
+		<form name="fcm">
+			<div class="scrollableTable tdwidth50">
+				<table  class="table table-striped table-hover table-bordered FCMTable">
+					<tr>
+						<th> Milestones</th>
+						<th ng-repeat="milestone in fcmData">{{milestone.name}}</th>
+					</tr>
+					<tr>
+						<th> #Sprints</th>
+						<td ng-repeat="milestone in fcmData"><input max-num max="4" type="number" class="form-control" ng-model="fcmData[$index].weeks" ng-change="addRemWeekFCM()"/></td>
+					</tr>
+					<tr>
+						<th> Collectible amount $</th>
+						<td ng-repeat="milestone in fcmData">{{milestone.payment | currency}}</td>
+					</tr>
+					<tr>
+						<th> Date</th>
+						<td ng-repeat="milestone in fcmData">{{milestone.date| date : 'MMM d, y'}}</td>
+					</tr>
+					<tr>
+						<th> Days</th>
+						<td ng-repeat="milestone in fcmData">{{milestone.days}}</td>
+					</tr>
+				</table>
+			</div>
+			<div class="outer">
+				<div class="inner">
+					<table class="table table-striped table-hover table-bordered">
+						<tr>
+							<td class="center">/</td>
+							<td ng-repeat="fw in fcmWeeks">{{fw.end | date : 'MMM d, y'}}</td>
+						</tr>
+						<tr>
+							<td>Advance</td>
+							<td class="blue">{{(selectedProject.originalObject.budget) * (selectedProject.originalObject.advance/100) | currency}}</td>
+							<td class="center" ng-repeat="fw in fcmWeeks" ng-if="$index != 0"></td>
+						</tr>
+						<tr ng-repeat="fweek in fcmData">
+							<td>{{fweek.name}} </td>
+							<td title=" {{fw.end| date : 'MMM d, y'}}" class="center" ng-repeat="fw in fcmWeeks"  ng-class="{'blue' : (fw.end == fweek.acceptance && fweek.payment >=1)}">
+								<span ng-if="fw.end == fweek.acceptance && fweek.payment >=1">{{fweek.payment | currency}}</span>
+							</td>
+							<!--<td ng-if="fweek.weeks ==1" class="center" ng-repeat="fw in fcmWeeks" abc="({{fweek.date}} > {{fcmWeeks[$index-1].end}} && {{fw.start}} < {{fweek.date}} )" ng-class="{'carrot' : ( fw.start < fweek.date && fw.end >= fweek.date  )}"></td>-->
+							<!--<td ng-if="fweek.weeks ==2" class="center" ng-repeat="fw in fcmWeeks" abc="({{fweek.date}} > {{fcmWeeks[$index-1].end}} && {{fw.start}} < {{fweek.date}} )" ng-class="{'carrot' : ( fw.start < fweek.date && fw.end >= fweek.date  )}"></td>-->
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="form-group">
+				<button ng-disabled="!(fcmData.length > 0) " class="btn btn-info col-md-12 btn-large" ng-click="saveFCMMilestones()">Save Payment Schedule</button>
+			</div>
+		</form>
+	</div>
+</div>

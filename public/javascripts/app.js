@@ -6,7 +6,7 @@ angular.module("communicationModule", []);
 angular.module("PaymentMilestone", []);
 angular.module('Payment', ['angularPayments', 'braintree-angular', 'stripe'])
 
-var taxiapp = angular.module('taxiapp', ['ngRoute', 'ngStorage', 'ngTable', 'ngResource', 'ui.grid', 'Authentication', 'Home',  'communicationModule', 'satellizer',  'Payment' ,'chart.js','PaymentMilestone','angucomplete'])
+var taxiapp = angular.module('taxiapp', ['ngRoute', 'ngStorage', 'ngTable', 'ngResource', 'ui.grid', 'Authentication', 'Home',  'communicationModule', 'satellizer',  'Payment' ,'chart.js','PaymentMilestone','angucomplete','ui.bootstrap'])
 
 .factory('basicAuthenticationInterceptor', function() {
 	
@@ -63,8 +63,10 @@ var taxiapp = angular.module('taxiapp', ['ngRoute', 'ngStorage', 'ngTable', 'ngR
 	//$locationProvider.html5Mode({enabled : true, requireBase : false});
 }])
 
-.run(['$rootScope', '$location', '$http', '$localStorage', function($rootScope, $location, $http, $localStorage) {
-
+.run(['$rootScope', '$location', '$http', '$localStorage','datepickerPopupConfig','datepickerConfig', function($rootScope, $location, $http, $localStorage,datepickerPopupConfig,datepickerConfig) {
+	datepickerPopupConfig.showWeeks = false;
+	//datepickerConfig.minDate = new Date();
+	//datepickerPopupConfig.minDate = new Date();
 	if(!$localStorage.userLoggedIn) {
 		$location.path('/login');
 	}

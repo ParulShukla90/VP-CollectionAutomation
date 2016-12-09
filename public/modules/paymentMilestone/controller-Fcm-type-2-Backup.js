@@ -4,13 +4,8 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 	$scope.selectedProject = {};
 	$scope.projects = {};
 	$scope.currDate = new Date();
-	$scope.currDate = moment();
 	$scope.parentResource = {};
 	$scope.fcmData = [];
-	$scope.dateOptions = {
-		minDate:new Date(),
-		'show-button-bar' : false		
-	}
 	/*
 	type: 1 -FC(Milestone) , 2 - hr, 3 - MM, 4- FC(Hourly)
 	tech: 1 - OS, 2 - MG, 3 - MS, 4 - BD, 5 - Ionic
@@ -41,12 +36,6 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 	}
 	else {
 		$rootScope.userLoggedIn = false;
-	}
-	
-	$scope.openDatePicker = function(index){
-		console.log(index);
-		$scope.fcmData[index].isOpen = true;
-		setTimeout(function(){$scope.$apply()},1)
 	}
 	
 	/* function that is called when selected project is changed*/
@@ -82,27 +71,75 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 	
 	/*function to set data for fixed cost milestone projects*/
 	$scope.setFCMData = function(data){
-		$scope.fcmPayment = 0;
 		if(data.paymentSchedule){
 			$scope.fcmData = data.paymentSchedule;
 			return false;	
 		}
-		if(!(data.advance>=0) || !data.startDate || !data.endDate || !data.resources || !data.totalHours){
+		if(!data.advance || !data.startDate || !data.endDate || !data.resources || !data.totalHours){
 			console.log('missing required information')
 			return false;
 		}
+		var flag = false;
 		var weeklyData = [];
-		var length = data.milestones.length;
-		var i = 0;
-		for(i = 0; i< length; i++){
+		var index = 1;
+		var lastDate = null;
+		$scope.occupiedHrs = 0;
+		$scope.totalHrs = data.totalHours;
+		while(flag == false){
 			var temp = {};
-			temp.title = data.milestones[i].title;
-			temp.payment = null;
-			temp.date = null;
-			temp.isOpen = false;
-			temp.isNew = false;
+			temp.name = 'Milestone '+ index;
+			var currentDayOfWeek;
+			if(lastDate){
+				lastDate = lastDate.day(12);
+				currentDayOfWeek = 1;
+			}else{
+				currentDayOfWeek = data.startDate.day();
+				lastDate = data.startDate.day(5);
+			}
+			temp.days = (5-currentDayOfWeek)+1;
+			temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
+			temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);
+			temp.weeks = 1;
+			temp.holidays = 0;
+			//temp.hourlyRate = data.hourlyRate;
+			temp.resources = parseInt(data.resources);
+			temp.dailyLimit = data.dailyLimit;
+			if(data.endDate <= lastDate){
+				lastDate = 	data.endDate;
+				temp.days = (lastDate.day()-currentDayOfWeek)+1;
+				temp.start = new Date(lastDate.days(1)).setHours(0,0,0,0);
+				temp.date = new Date(lastDate.days(5)).setHours(0,0,0,0);	
+			}
+			temp.acceptance = new Date(lastDate.days(5)).setDate(new Date(temp.date).getDate() + 14);
+			temp.acceptance = new Date(temp.acceptance).setHours(0,0,0,0);
+			//temp.acceptance = temp.acceptance.setDate(temp.acceptance.getDate() + 14);
+			if($scope.occupiedHrs < $scope.totalHrs){
+				if(($scope.totalHrs - $scope.occupiedHrs) > (temp.days *  temp.resources * temp.dailyLimit)){
+					//console.log(1);
+					temp.hrsThisWeek = temp.days *  temp.resources * temp.dailyLimit;
+					$scope.occupiedHrs = $scope.occupiedHrs +(temp.days *  temp.resources * temp.dailyLimit);
+				}else{
+					temp.hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
+					$scope.occupiedHrs = $scope.occupiedHrs + ($scope.totalHrs - $scope.occupiedHrs);
+					//console.log(2);
+					flag = true;
+				}
+			}else{
+				console.log(3);
+				temp.hrsThisWeek = $scope.totalHrs - $scope.occupiedHrs;
+				$scope.occupiedHrs = $scope.occupiedHrs + ($scope.totalHrs - $scope.occupiedHrs);
+				flag = true;
+			}
 			weeklyData.push(temp);
+			index++;
+			if(lastDate < data.endDate ){
+				
+			}else{
+				console.log(4);
+				flag = true;
+			}
 		}
+		
 		$scope.fcmData = weeklyData;
 		$scope.setPaymentsFC();
 	}
@@ -112,75 +149,30 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 		var data = angular.copy($scope.selectedProject.originalObject);
 		var i = 0;
 		var weeklydataLength = $scope.fcmData.length;
-		var advance,paymentPerMilestone;
-		advance = data.budget*(data.advance/100);
-		paymentPerMilestone = data.budget/weeklydataLength;
-		if(data.advance > 0){
-			paymentPerMilestone = parseFloat(((data.budget-advance)/(weeklydataLength-1)).toFixed(2));
-			$scope.fcmData[i].payment = advance;
-			$scope.fcmPayment = advance;
-		}
+		var advance = data.budget*(data.advance/100);
+		var paymentPerMilestone = (data.budget-advance)/(weeklydataLength-1);
+		$scope.fcmData[0].payment = 0;
 		if(weeklydataLength >1){
-			for(i =0; i < weeklydataLength; i++){
-				//console.log(i,weeklydataLength)
-				if(i == 0){
-					if(data.advance == 0){
-						$scope.fcmData[i].payment = paymentPerMilestone;
-						$scope.fcmData[i].title = data.milestones[0].title;
-					}else{
-						$scope.fcmData[i].title = 'Advance / '+data.milestones[0].title;
-					}
-				}else{
-					$scope.fcmData[i].payment = paymentPerMilestone;
-				}
-				$scope.fcmPayment = $scope.fcmPayment + parseFloat($scope.fcmData[i].payment);
+			for(i =1; i < weeklydataLength; i++){
+				$scope.fcmData[i].payment = paymentPerMilestone;
 			}
 		}
-		//$scope.getAllWeeksFCM();
+		$scope.getAllWeeksFCM();
 	}
 	
-	$scope.reCalcFcmPayments = function(){
-		var i = 0;
-		var weeklydataLength = $scope.fcmData.length;
-		$scope.fcmPayment = 0;
-		for(i = 0; i < weeklydataLength; i++){
-			console.log($scope.fcmPayment,' + ',$scope.fcmData[i].payment)
-			$scope.fcmPayment = $scope.fcmPayment + parseFloat($scope.fcmData[i].payment);
-		}
-		console.log($scope.fcmPayment, $scope.selectedProject.originalObject.budget);
-		if($scope.fcmPayment > $scope.selectedProject.originalObject.budget){
-			alert('Total amount of payment milestones exceeds the budget by $'+ ($scope.fcmPayment - $scope.selectedProject.originalObject.budget).toFixed(2));
-		}
-	}
 	
 	/* */
-	$scope.removeMilestone = function(index){
-		if($scope.selectedProject.originalObject.advance > 0 && index == 0){
-			alert('You cannot remove advance milestone');
+	$scope.addWeekFCM = function(index){
+		if(($scope.fcmData.length -1) == index){
+			alert('You can not add week to this milestone');
 			return;
 		}
-		$scope.fcmPayment = 0;
-		$scope.fcmData.splice(index,1);
-		var i =0;
-		for(i =0; i < $scope.fcmData.length; i++ ){
-			$scope.fcmPayment = $scope.fcmPayment +parseFloat($scope.fcmData[i].payment);
-		}
-		//$scope.setPaymentsFC();
+		$scope.fcmData[index].weeks = 2;
+		$scope.addRemWeekFCM();
 	}
-	$scope.addMilestone = function(index){
-		var i =0;
-		$scope.fcmPayment = 0;
-		for(i =0; i < $scope.fcmData.length; i++ ){
-			$scope.fcmPayment = $scope.fcmPayment +parseFloat($scope.fcmData[i].payment);
-		}
-		var temp = {};
-		temp.title = 'Milestone '+($scope.fcmData.length+1);
-		temp.payment = ($scope.selectedProject.originalObject.budget - $scope.fcmPayment) >0?$scope.selectedProject.originalObject.budget - $scope.fcmPayment:0 ;
-		temp.date = null;
-		temp.isOpen = false;
-		temp.isNew = true;
-		$scope.fcmData.push(temp);
-		//$scope.setPaymentsFC();
+	$scope.removeWeekFCM = function(index){
+		$scope.fcmData[index].weeks = 1;
+		$scope.addRemWeekFCM();
 	}
 	
 	$scope.getAllWeeksFCM = function(){
@@ -378,47 +370,12 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 		var i = 0;
 		var j = 0;
 		var index ;
-		var milestoneNames = [];
-		var flag = false;
-		
-		for(j = 0;j<$scope.fcmData.length; j ++){
-			if(milestoneNames.indexOf($scope.fcmData[j].title) == -1){
-				milestoneNames.push($scope.fcmData[j].title);
-			}else{
-				flag = true;
-			}
-		}
-		if(flag){
-			alert('You can not have duplicate milestone names.');
-			return;
-		}
-		$scope.fcmPayment = 0;
-		var flag1 = false;
 		for(i =0; i < $scope.fcmData.length; i++ ){
-			$scope.fcmData[i].isNew = false;
-			$scope.fcmData[i].isOpen= false;
-			$scope.fcmData[i].payment = parseFloat($scope.fcmData[i].payment)
-			if($scope.fcmData[i].payment <1 ){
-				flag1 = true;
-			}
-			$scope.fcmPayment = $scope.fcmPayment +parseFloat($scope.fcmData[i].payment);
 			for(j = 0; j < $scope.projects.val.length;j++){
 				if($scope.selectedProject.originalObject._id == $scope.projects.val[j]._id){
 					index = j;
 				}
 			}
-		}
-		if(flag1){
-			alert('You can not have a milestone with amount $0.');
-			return;
-		}
-		console.log($scope.fcmPayment , $scope.selectedProject.originalObject.budget)
-		if($scope.fcmPayment > $scope.selectedProject.originalObject.budget){
-			alert('Total amount of payment milestones exceeds the budget by $'+ parseFloat(($scope.fcmPayment - $scope.selectedProject.originalObject.budget).toFixed(2)));
-			return;
-		}else if($scope.fcmPayment < $scope.selectedProject.originalObject.budget){
-			alert('$'+ parseFloat(($scope.selectedProject.originalObject.budget-$scope.fcmPayment ).toFixed(2))+ ' still remains unassigned.');
-			return;
 		}
 		$scope.projects.val[index].paymentSchedule = $scope.fcmData;
 		alert('Payment schedule has been saved successfully');
