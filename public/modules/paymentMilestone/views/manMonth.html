@@ -1,3 +1,59 @@
-<div class="row" ng-if="selectedProject.originalObject">
-	<div class="col-md-12">Man Month</div>
+<div class="row paddingTop25" ng-if="selectedProject.originalObject">
+	<div class="col-md-12">
+		<!--<h1> Payment milestones for Man Month projects</h1>-->
+		<div class="form-group clearfix">
+			<label class="form-control left10">Monthly amount : </label> <label class="form-control left80">{{selectedProject.originalObject.monthlyAmount | currency}}</label>
+		</div>
+		<div class="form-group clearfix">
+			<label class="form-control left10">Project Duration : </label><label class="form-control left80">{{selectedProject.originalObject.months}} months</label>  
+		</div>
+		<!--<div class="form-group clearfix">-->
+		<!--	<label class="form-control left10">Daily limit(Hrs) : </label> <input max-num max="9" type="number" class="form-control  left80" ng-model="selectedProject.originalObject.dailyLimit" ng-change="reCalcFCMData()"/> -->
+		<!--</div>-->
+		<div class="form-controll"><h1>Man/Month payment schedule</h1></div>
+		<form name="fcm">
+			<div class="form-group" ng-repeat="milestone in mmData">
+				<div class="row">
+					<div ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
+						<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew" type="text" class="form-control" value="{{milestone.title}}"/>
+					</div>
+					<div ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
+						<!--<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew"  type="number" step="0.01" currency-input class="form-control" ng-model="mmData[$index].payment" ng-change="reCalcFcmPayments()" ng-model-options="{ debounce: 100 }"/>-->
+						<input required ng-disabled="(selectedProject.originalObject.paymentSchedule && milestone.date <=currDate && !milestone.isNew) ||(selectedProject.originalObject.advance >0 && $index ==0 )"  type="number" step="0.01" currency-input class="form-control" ng-model="mmData[$index].payment" ng-change="getTotalMmInvoice(true)" ng-model-options="{ debounce: 100 }"/>						
+					</div>
+					<div ng-class="{'col-md-3':selectedProject.originalObject.paymentSchedule,'col-md-4':!selectedProject.originalObject.paymentSchedule}">
+						<div class="input-group">
+							<input ng-if="!selectedProject.originalObject.paymentSchedule || milestone.isNew " required ng-focus="mmData[$index].isOpen = true" datepicker-options="dateOptions" type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="mmData[$index].date" class="form-control" is-open="mmData[$index].isOpen" show-weeks="false" min-date="currDate" show-button-bar="false" />
+							<input name="dateChange{{$index}}" ng-init="milestone.prevDate = milestone.date" ng-if="(selectedProject.originalObject.paymentSchedule && milestone.date >currDate &&  !milestone.isNew)" required ng-focus="mmData[$index].isOpen = true" datepicker-options="dateOptions" type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="mmData[$index].date" class="form-control" is-open="mmData[$index].isOpen" show-weeks="false" min-date="currDate" show-button-bar="false" />
+							<label ng-if="selectedProject.originalObject.paymentSchedule && milestone.date <=currDate && !milestone.isNew" class="form-control" >{{milestone.date | date : 'MMM d, y'}}</label>
+							<span class="input-group-btn"  ng-click="milestone.isOpen = true">
+								<a type="button" class="btn btn-default"><i class="glyphicon glyphicon-calendar"></i></a>
+							</span>
+						</div>
+					</div>
+					<div ng-if="((selectedProject.originalObject.paymentSchedule && milestone.date >currDate) && milestone.prevDate != milestone.date && !milestone.isNew )|| milestone.reason" class="col-md-3">
+						<select ng-disabled="milestone.prevDate == milestone.date" ng-model="mmData[$index].reason" class="form-control" required>
+							<option value="">Please select a reason</option>
+							<option value="1">Delay in milestone delivery.</option>
+							<option value="2">Client unavailable </option>
+							<option value="3">Client CC blocked </option>
+							<option value="4">Client CC verification pending </option>
+						</select>
+					</div>
+					<div class="col-md-2">
+						<div class="delIcon" ng-click="remMmInvoice($index)" title="Delete milestone" ng-if="(!selectedProject.originalObject.paymentSchedule || milestone.isNew ) && mmData.length >1">
+							<i class="fa fa-times"></i>
+						</div>
+						<div class="addIcon" ng-click="addMmInvoice()" ng-if="$index == (mmData.length-1)">
+							<i class="fa fa-plus" title="Add new milestone"></i>
+						</div>
+					</div>
+				</div>
+				
+			</div>
+			<div class="form-group">
+				<button ng-disabled="!(mmData.length > 0) || fcm.$invalid " class="btn btn-info col-md-12 btn-large" ng-click="saveMmInvoice()">Save Payment Schedule</button>
+			</div>
+		</form>
+	</div>
 </div>

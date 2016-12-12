@@ -31,7 +31,7 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 	$scope.projects.val = [
 		{_id:1,name:'LifeShareCare FC',budget: 22000,type:1,startDate:new Date('09/09/2016').setHours(0,0,0,0),endDate:new Date('02/12/2017').setHours(0,0,0,0),bdg : 'Rohit Verma',resources:2,tech:4,advance : 0,totalHours:1200,dailyLimit : 9,milestones : milestones},
 		{_id:2,name:'Echolimousine TSK',budget: 25000,type:2,startDate:new Date('11/10/2016').setHours(0,0,0,0),endDate:new Date('02/02/2017').setHours(0,0,0,0),bdg : 'Nidhi Thakur',resources:2,tech:4,hourlyRate:12,totalHours:500,dailyLimit : 9},
-		{_id:3,name: 'CollabMedia MM',budget:30000,type:3,startDate:new Date('07/09/2016').setHours(0,0,0,0),endDate:new Date('01/12/2017').setHours(0,0,0,0),bdg : 'Rahul Sharma',resources:3,tech:4}
+		{_id:3,name: 'CollabMedia MM',budget:30000,type:3,startDate:new Date('07/09/2016').setHours(0,0,0,0),endDate:new Date('01/12/2017').setHours(0,0,0,0),bdg : 'Rahul Sharma',resources:2,tech:4,months :3,monthlyAmount :4000}
 	]
 	
 	/*Default functionality running for session management*/
@@ -67,6 +67,7 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 					$scope.setHourlyData(data);
 					break;
 				case 3:
+					$scope.initMMData(data);
 					//get man month data
 					break;
 				default:
@@ -74,6 +75,114 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 			}
 			
 		}
+	}
+	
+	/*======================================================================================*/
+	/*=====================FUNCTIONS FOR FC(MILESTONE) PROJECTS=============================*/
+	/*======================================================================================*/
+	
+	$scope.initMMData = function(data){
+		if(data.paymentSchedule){
+			$scope.mmData = data.paymentSchedule;
+			console.log($scope.mmData);
+			return false;	
+		}
+		if(!data.resources || !data.months || !data.monthlyAmount){
+			console.log('missing required information')
+			return false;
+		}
+		$scope.mmData = [];
+		$scope.addMmInvoice();
+	}
+	
+	$scope.addMmInvoice = function(){
+		var maxMonths = $scope.selectedProject.originalObject.months * 2;
+		if($scope.mmData.length >= maxMonths){
+			alert('The project is of '+$scope.selectedProject.originalObject.months+' months. So, you can not have more than ' + maxMonths+' invoices.')
+			return;
+		}
+		var temp = {};
+		temp.title = 'Invoice '+($scope.mmData.length+1);
+		temp.payment = 0;
+		temp.date = null;
+		temp.isOpen = false;
+		temp.isNew = true;
+		$scope.mmData.push(temp);
+		//console.log($scope.mmData)
+	}
+	
+	$scope.remMmInvoice = function(index){
+		if(index >= 0){
+			setTimeout(function(){
+				$scope.mmData.splice(index,1);
+				$scope.$apply();
+				console.log($scope.mmData);
+			},1)
+		}
+	}
+	
+	$scope.getTotalMmInvoice = function(check){
+		var i = 0;
+		$scope.mmPayment = 0;
+		for(i = 0; i < $scope.mmData.length; i++){
+			//console.log($scope.mmPayment,' + ',parseFloat($scope.mmData[i].payment),$scope.mmData)
+			$scope.mmPayment = $scope.mmPayment + parseFloat($scope.mmData[i].payment);
+		}
+		if($scope.selectedProject.originalObject.budget < $scope.mmPayment){
+			alert('Total amount of payment milestones exceeds the budget by $'+ ($scope.mmPayment - $scope.selectedProject.originalObject.budget).toFixed(2));
+			return false;
+		}
+	}
+	
+	$scope.saveMmInvoice = function(){
+		var i = 0;
+		var j = 0;
+		var index ;
+		var milestoneNames = [];
+		var flag = false;
+		
+		for(j = 0;j<$scope.mmData.length; j ++){
+			if(milestoneNames.indexOf($scope.mmData[j].title) == -1){
+				milestoneNames.push($scope.mmData[j].title);
+			}else{
+				flag = true;
+			}
+		}
+		if(flag){
+			alert('You can not have duplicate milestone names.');
+			return;
+		}
+		$scope.mmPayment = 0;
+		var flag1 = false;
+		for(i =0; i < $scope.mmData.length; i++ ){
+			$scope.mmData[i].isNew = false;
+			$scope.mmData[i].isOpen= false;
+			$scope.mmData[i].payment = parseFloat($scope.mmData[i].payment)
+			if($scope.mmData[i].payment <1 ){
+				flag1 = true;
+			}
+			$scope.mmPayment = $scope.mmPayment +parseFloat($scope.mmData[i].payment);
+			for(j = 0; j < $scope.projects.val.length;j++){
+				if($scope.selectedProject.originalObject._id == $scope.projects.val[j]._id){
+					index = j;
+				}
+			}
+		}
+		if(flag1){
+			alert('You can not have a milestone with amount $0.');
+			return;
+		}
+		//console.log($scope.mmPayment , $scope.selectedProject.originalObject.budget)
+		if($scope.mmPayment > $scope.selectedProject.originalObject.budget){
+			alert('Total amount of payment milestones exceeds the budget by $'+ parseFloat(($scope.mmPayment - $scope.selectedProject.originalObject.budget).toFixed(2)));
+			return;
+		}else if($scope.mmPayment < $scope.selectedProject.originalObject.budget){
+			alert('$'+ parseFloat(($scope.selectedProject.originalObject.budget-$scope.mmPayment ).toFixed(2))+ ' still remains unassigned.');
+			return;
+		}
+		$scope.projects.val[index].paymentSchedule = $scope.mmData;
+		alert('Payment schedule has been saved successfully');
+		$scope.selectedProject = {};
 	}
 	
 	/*======================================================================================*/
@@ -175,7 +284,7 @@ taxiapp.controller("paymentMilestoneController", ['$scope', '$rootScope','$local
 		}
 		var temp = {};
 		temp.title = 'Milestone '+($scope.fcmData.length+1);
-		temp.payment = ($scope.selectedProject.originalObject.budget - $scope.fcmPayment) >0?$scope.selectedProject.originalObject.budget - $scope.fcmPayment:0 ;
+		temp.payment = ($scope.selectedProject.originalObject.budget - $scope.fcmPayment) >0?parseFloat(($scope.selectedProject.originalObject.budget - $scope.fcmPayment).toFixed(2)):0 ;
 		temp.date = null;
 		temp.isOpen = false;
 		temp.isNew = true;

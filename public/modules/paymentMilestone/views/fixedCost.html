@@ -17,7 +17,8 @@
 						<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew" type="text" class="form-control" value="{{milestone.title}}"/>
 					</div>
 					<div ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
-						<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew"  type="number" step="0.01" currency-input class="form-control" ng-model="fcmData[$index].payment" ng-change="reCalcFcmPayments()" ng-model-options="{ debounce: 100 }"/>
+						<!--<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew"  type="number" step="0.01" currency-input class="form-control" ng-model="fcmData[$index].payment" ng-change="reCalcFcmPayments()" ng-model-options="{ debounce: 100 }"/>-->
+						<input required ng-disabled="(selectedProject.originalObject.paymentSchedule && milestone.date <=currDate && !milestone.isNew) ||(selectedProject.originalObject.advance >0 && $index ==0 )"  type="number" step="0.01" currency-input class="form-control" ng-model="fcmData[$index].payment" ng-change="reCalcFcmPayments()" ng-model-options="{ debounce: 100 }"/>						
 					</div>
 					<div ng-class="{'col-md-3':selectedProject.originalObject.paymentSchedule,'col-md-4':!selectedProject.originalObject.paymentSchedule}">
 						<div class="input-group">
@@ -29,8 +30,8 @@
 							</span>
 						</div>
 					</div>
-					<div ng-if="(selectedProject.originalObject.paymentSchedule && milestone.date >currDate) && milestone.prevDate != milestone.date && !milestone.isNew " class="col-md-3">
-						<select ng-model="fcmData[$index].reason" class="form-control" required>
+					<div ng-if="((selectedProject.originalObject.paymentSchedule && milestone.date >currDate) && milestone.prevDate != milestone.date && !milestone.isNew )|| milestone.reason" class="col-md-3">
+						<select ng-disabled="milestone.prevDate == milestone.date" ng-model="fcmData[$index].reason" class="form-control" required>
 							<option value="1">Delay in milestone delivery.</option>
 							<option value="2">Client unavailable </option>
 							<option value="3">Client CC blocked </option>
