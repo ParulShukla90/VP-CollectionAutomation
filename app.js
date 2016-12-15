@@ -138,8 +138,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 /*app.use('/', routes);
 app.use('/users', users);*/
 
+require('./routes/collectionAutomation')(app, express, passport);
 require('./routes/adminlogin')(app, express, passport);
-require('./routes/payment')(app, express, passport);
+//require('./routes/payment')(app, express, passport);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,0 +1,23 @@
+<aside class="right-side">
+	<section class="content-header">
+		<h1>
+            Lead closure STEP {{step}}
+        </h1>
+		<ol class="breadcrumb">
+			<li><a href="/#/home"><i class="fa fa-dashboard"></i> Home</a></li>
+			<li><a href="/#/paymentMilestones">Lead closure</a></li>
+		</ol>
+	</section>
+	<!-- Main content -->
+	<section class="content">
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="box box-info">
+               <div ng-include="'modules/leadClosure/views/step1.html'" ng-if="step == 1"></div>
+               <div ng-include="'modules/leadClosure/views/step2.html'" ng-if="step == 2"></div>
+               <div ng-include="'modules/leadClosure/views/step3.html'" ng-if="step == 3"></div>
+            </div>
+			</div>
+		</div>
+	</section>
+</aside>

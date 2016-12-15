@@ -1,4 +1,4 @@
-var baseUrl = "http://172.24.0.210:3000";
+var baseUrl = "http://172.24.0.210:4040";
 
 var webservices = {	
 
@@ -21,8 +21,10 @@ var webservices = {
 	"createStripeTransaction":  baseUrl + "/payment/createStripeTransaction",
 	"addPaypalCard": baseUrl + "/payment/addPaypalCard",
 	"createPaypalCardTransaction":  baseUrl + "/payment/createPaypalCardTransaction",
-	"createPaypalAccountTransaction":  baseUrl + "/payment/createPaypalAccountTransaction"
+	"createPaypalAccountTransaction":  baseUrl + "/payment/createPaypalAccountTransaction",
 
+	//paymentMilestones -- collectionAutomation
+	"reasonsForChange" : baseUrl + '/ca/reasonsForChange',
 
 
 

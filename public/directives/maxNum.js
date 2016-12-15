@@ -81,7 +81,16 @@ taxiapp.directive('maxNum', function($filter, $browser) {
 
         }
     };
-})/*.directive('currencyInput', function($filter, $browser) {
+}).directive('datepickerPopup', function (){
+  return {
+    restrict: 'EAC',
+    require: 'ngModel',
+    link: function(scope, element, attr, controller) {
+      //remove the default formatter from the input directive to prevent conflict
+      controller.$formatters.shift();
+    }
+  }
+});/*.directive('currencyInput', function($filter, $browser) {
     return {
         restrict: 'A',
         require: 'ngModel',

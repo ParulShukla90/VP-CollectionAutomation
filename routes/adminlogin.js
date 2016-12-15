@@ -9,5 +9,4 @@ module.exports = function(app, express, passport) {
 	router.post('/auth/twitter', adminLoginObj.twitterLogin);
 	router.post('/auth/google', adminLoginObj.googeLogin);
 	app.use('/adminlogin', router);
-
 }

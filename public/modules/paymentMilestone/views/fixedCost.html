@@ -13,33 +13,39 @@
 		<form name="fcm">
 			<div class="form-group" ng-repeat="milestone in fcmData">
 				<div class="row">
-					<div ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
-						<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew" type="text" class="form-control" value="{{milestone.title}}"/>
+					<div class="form-group" ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
+						<label ng-if="$index==0">Milestone Title </label>
+						<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew" type="text" ng-model="fcmData[$index].title" class="form-control" value="{{milestone.title}}"/>
 					</div>
-					<div ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
+					<div class="form-group" ng-init="milestone.prevPayment = milestone.payment" ng-class="{'col-md-2':selectedProject.originalObject.paymentSchedule,'col-md-3':!selectedProject.originalObject.paymentSchedule}">
 						<!--<input required ng-disabled="selectedProject.originalObject.paymentSchedule && !milestone.isNew"  type="number" step="0.01" currency-input class="form-control" ng-model="fcmData[$index].payment" ng-change="reCalcFcmPayments()" ng-model-options="{ debounce: 100 }"/>-->
+						<label ng-if="$index==0" >Payment to be received $</label>
 						<input required ng-disabled="(selectedProject.originalObject.paymentSchedule && milestone.date <=currDate && !milestone.isNew) ||(selectedProject.originalObject.advance >0 && $index ==0 )"  type="number" step="0.01" currency-input class="form-control" ng-model="fcmData[$index].payment" ng-change="reCalcFcmPayments()" ng-model-options="{ debounce: 100 }"/>						
 					</div>
 					<div ng-class="{'col-md-3':selectedProject.originalObject.paymentSchedule,'col-md-4':!selectedProject.originalObject.paymentSchedule}">
+						<label ng-if="$index==0">Due Date </label>
 						<div class="input-group">
-							<input ng-if="!selectedProject.originalObject.paymentSchedule || milestone.isNew " required ng-focus="fcmData[$index].isOpen = true" datepicker-options="dateOptions" type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="fcmData[$index].date" class="form-control" is-open="fcmData[$index].isOpen" show-weeks="false" min-date="currDate" show-button-bar="false" />
-							<input name="dateChange{{$index}}" ng-init="milestone.prevDate = milestone.date" ng-if="(selectedProject.originalObject.paymentSchedule && milestone.date >currDate &&  !milestone.isNew)" required ng-focus="fcmData[$index].isOpen = true" datepicker-options="dateOptions" type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="fcmData[$index].date" class="form-control" is-open="fcmData[$index].isOpen" show-weeks="false" min-date="currDate" show-button-bar="false" />
+							
+							<input ng-if="!selectedProject.originalObject.paymentSchedule || milestone.isNew " required ng-focus="fcmData[$index].isOpen = true" datepicker-options="dateOptions" type="text" datepicker-popup="{{format}}" ng-model="fcmData[$index].date" class="form-control" is-open="fcmData[$index].isOpen" show-weeks="false" min-date="currDate" show-button-bar="false" />
+							<input name="dateChange{{$index}}" ng-init="milestone.prevDate = milestone.date" ng-if="(selectedProject.originalObject.paymentSchedule && milestone.date >currDate &&  !milestone.isNew)" required ng-focus="fcmData[$index].isOpen = true" datepicker-options="dateOptions" type="text" datepicker-popup="{{format}}" ng-model="fcmData[$index].date" class="form-control" is-open="fcmData[$index].isOpen" show-weeks="false" min-date="currDate" show-button-bar="false" />
 							<label ng-if="selectedProject.originalObject.paymentSchedule && milestone.date <=currDate && !milestone.isNew" class="form-control" >{{milestone.date | date : 'MMM d, y'}}</label>
-							<span class="input-group-btn"  ng-click="milestone.isOpen = true">
+							<span class="input-group-btn"  ng-click="openCalenderFCM($index)">
 								<a type="button" class="btn btn-default"><i class="glyphicon glyphicon-calendar"></i></a>
 							</span>
 						</div>
 					</div>
-					<div ng-if="((selectedProject.originalObject.paymentSchedule && milestone.date >currDate) && milestone.prevDate != milestone.date && !milestone.isNew )|| milestone.reason" class="col-md-3">
-						<select ng-disabled="milestone.prevDate == milestone.date" ng-model="fcmData[$index].reason" class="form-control" required>
-							<option value="1">Delay in milestone delivery.</option>
-							<option value="2">Client unavailable </option>
-							<option value="3">Client CC blocked </option>
-							<option value="4">Client CC verification pending </option>
+					<div ng-if="((selectedProject.originalObject.paymentSchedule && milestone.date >currDate) && (milestone.prevDate != milestone.date || milestone.prevPayment != milestone.payment) && !milestone.isNew )|| milestone.reason" class="col-md-3 form-group">
+						<label ng-if="$index==0">Reason</label>
+						<select  ng-model="fcmData[$index].reason" class="form-control" required>
+							<option value="1" ng-selected="(fcmData[$index].reason == '1')||(!fcmData[$index].reason)">Delay in milestone delivery</option>
+							<option value="2" ng-selected="(fcmData[$index].reason == '2')">Client unavailable </option>
+							<option value="3" ng-selected="(fcmData[$index].reason == '3')">Client CC blocked </option>
+							<option value="4" ng-selected="(fcmData[$index].reason == '4')">Client CC verification pending </option>
 						</select>
 					</div>
-					<div class="col-md-2">
-						<div  ng-if="!selectedProject.originalObject.paymentSchedule || milestone.isNew" class="delIcon" ng-click="removeMilestone($index)" title="Delete milestone">
+					<div class="col-md-2 form-group">
+						<label ng-if="$index==0" style="width: 100%"></label>
+						<div  ng-if="((!selectedProject.originalObject.paymentSchedule || milestone.isNew) && fcmData.length >1 && selectedProject.originalObject.advance == 0) || ((!selectedProject.originalObject.paymentSchedule || milestone.isNew) && fcmData.length >1 && selectedProject.originalObject.advance >0 && $index!=0)" class="delIcon" ng-click="removeMilestone($index)" title="Delete milestone">
 							<i class="fa fa-times"></i>
 						</div>
 						<div class="addIcon" ng-click="addMilestone()" ng-if="$index == (fcmData.length-1)">

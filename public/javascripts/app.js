@@ -4,9 +4,10 @@ angular.module("Authentication", []);
 angular.module("Home", []);
 angular.module("communicationModule", []);
 angular.module("PaymentMilestone", []);
+angular.module("leadClosure", []);
 angular.module('Payment', ['angularPayments', 'braintree-angular', 'stripe'])
 
-var taxiapp = angular.module('taxiapp', ['ngRoute', 'ngStorage', 'ngTable', 'ngResource', 'ui.grid', 'Authentication', 'Home',  'communicationModule', 'satellizer',  'Payment' ,'chart.js','PaymentMilestone','angucomplete','ui.bootstrap'])
+var taxiapp = angular.module('taxiapp', ['ngRoute', 'ngStorage', 'ngTable', 'ngResource', 'ui.grid', 'Authentication', 'Home',  'communicationModule', 'satellizer',  'Payment' ,'chart.js','PaymentMilestone','angucomplete','ui.bootstrap','leadClosure'])
 
 .factory('basicAuthenticationInterceptor', function() {
 	
@@ -48,6 +49,10 @@ var taxiapp = angular.module('taxiapp', ['ngRoute', 'ngStorage', 'ngTable', 'ngR
 	.when('/paymentMilestone', {
 	   controller : "paymentMilestoneController",
 	   templateUrl : "/modules/paymentMilestone/views/paymentMilestone.html"
+	})
+	.when('/leadClosure', {
+	   controller : "leadClosureController",
+	   templateUrl : "/modules/leadClosure/views/leadClosure.html"
 	})
 
 	// .when('/card/add', {
