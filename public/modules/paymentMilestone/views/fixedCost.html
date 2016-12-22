@@ -36,11 +36,9 @@
 					</div>
 					<div ng-if="((selectedProject.originalObject.paymentSchedule && milestone.date >currDate) && (milestone.prevDate != milestone.date || milestone.prevPayment != milestone.payment) && !milestone.isNew )|| milestone.reason" class="col-md-3 form-group">
 						<label ng-if="$index==0">Reason</label>
+						<span style="visibility: hidden" ng-if="!fcmData[$index].reason"><span ng-init="fcmData[$index].reason = reasons[0]._id"></span></span>
 						<select  ng-model="fcmData[$index].reason" class="form-control" required>
-							<option value="1" ng-selected="(fcmData[$index].reason == '1')||(!fcmData[$index].reason)">Delay in milestone delivery</option>
-							<option value="2" ng-selected="(fcmData[$index].reason == '2')">Client unavailable </option>
-							<option value="3" ng-selected="(fcmData[$index].reason == '3')">Client CC blocked </option>
-							<option value="4" ng-selected="(fcmData[$index].reason == '4')">Client CC verification pending </option>
+							<option ng-repeat="reason in reasons" value="{{reason._id}}" ng-selected="(fcmData[$index].reason == reason._id)||(!fcmData[$index].reason && $index == 0)" abc="({{fcmData[$index].reason}} == {{reason._id}})||({{!fcmData[$index].reason}} && {{$index}} == 0)">{{reason.title}}</option>
 						</select>
 					</div>
 					<div class="col-md-2 form-group">

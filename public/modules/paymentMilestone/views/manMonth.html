@@ -36,12 +36,16 @@
 					</div>
 					<div ng-if="((selectedProject.originalObject.paymentSchedule && milestone.date >currDate) && (milestone.prevDate != milestone.date || milestone.prevPayment != milestone.payment)  && !milestone.isNew )|| milestone.reason" class="col-md-3">
 						<label ng-if="$index==0">Reason</label>
+						<span style="visibility: hidden" ng-if="!mmData[$index].reason"><span ng-init="mmData[$index].reason = reasons[0]._id"></span></span>
 						<select  ng-model="mmData[$index].reason" class="form-control" required>
-							<option value="1" ng-selected="(mmData[$index].reason == '1')||(!mmData[$index].reason)">Delay in milestone delivery.</option>
-							<option value="2" ng-selected="(mmData[$index].reason == '2')">Client unavailable </option>
-							<option value="3" ng-selected="(mmData[$index].reason == '3')">Client CC blocked </option>
-							<option value="4" ng-selected="(mmData[$index].reason == '4')">Client CC verification pending </option>
+							<option ng-repeat="reason in reasons" value="{{reason._id}}" ng-selected="(mmData[$index].reason == reason._id)||(!mmData[$index].reason && $index == 0)" abc="({{mmData[$index].reason}} == {{reason._id}})||({{!mmData[$index].reason}} && {{$index}} == 0)">{{reason.title}}</option>
 						</select>
+						<!--<select  ng-model="mmData[$index].reason" class="form-control" required>-->
+						<!--	<option value="1" ng-selected="(mmData[$index].reason == '1')||(!mmData[$index].reason)">Delay in milestone delivery.</option>-->
+						<!--	<option value="2" ng-selected="(mmData[$index].reason == '2')">Client unavailable </option>-->
+						<!--	<option value="3" ng-selected="(mmData[$index].reason == '3')">Client CC blocked </option>-->
+						<!--	<option value="4" ng-selected="(mmData[$index].reason == '4')">Client CC verification pending </option>-->
+						<!--</select>-->
 					</div>
 					<div class="col-md-2">
 						<label ng-if="$index==0" style="width: 100%"></label>

@@ -25,6 +25,8 @@ var webservices = {
 
 	//paymentMilestones -- collectionAutomation
 	"reasonsForChange" : baseUrl + '/ca/reasonsForChange',
+	"saveMilestones" : baseUrl + '/ca/saveMilestones',
+	"paymentMilestones" : baseUrl + '/ca/paymentMilestones',
 
 
 

@@ -6,14 +6,19 @@ angular.module("PaymentMilestone")
 
 	var service = {};
 	service.reasonsForChange = function(callback) {
-			communicationService.resultViaGet(webservices.reasonsForChange, appConstants.authorizationKey, headerConstants.json, function(response) {
-			callback(response.data);
+		communicationService.resultViaGet(webservices.reasonsForChange, appConstants.authorizationKey, headerConstants.json, function(response) {
+			callback(response);
 		});
 	}
 
-	service.addBraintreeCard = function(inputJsonString, callback) {
-			communicationService.resultViaPost(webservices.addBraintreeCard, appConstants.authorizationKey, headerConstants.json, inputJsonString, function(response) {
-			callback(response.data);
+	service.saveMilestones = function(inputJsonString, callback) {
+		communicationService.resultViaPost(webservices.saveMilestones, appConstants.authorizationKey, headerConstants.json, inputJsonString, function(response) {
+			callback(response);
+		});
+	}
+	service.paymentMilestones = function(inputJsonString, callback) {
+		communicationService.resultViaPost(webservices.paymentMilestones, appConstants.authorizationKey, headerConstants.json, inputJsonString, function(response) {
+			callback(response);
 		});
 	}
 

@@ -26,7 +26,7 @@
 					<!--<th></th>-->
 				</tr>
 				<tr ng-repeat="week in hourlyData">
-						<td>{{week.name}}</td>
+						<td>{{week.title}}</td>
 						<td class="center width100px"><input max-num max="{{week.days}}" type="number" class="form-control" ng-model="hourlyData[$index].holidays" ng-change="reCalcHourlyData()" ng-disabled="selectedProject.originalObject.paymentSchedule && week.date < currDate"/></td>
 						<!--<td>{{week.date | date : 'MMM d, y'}}</td>-->
 						<!--<td class="center">{{week.resources}}</td>-->

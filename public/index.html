@@ -8,6 +8,8 @@
         <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
          <script src="javascripts/angular.min.js" type="text/javascript"></script>
+         <script src="javascripts/angular-animate.min.js" type="text/javascript"></script>
+         <script src="javascripts/toaster.min.js" type="text/javascript"></script>
          <script src="javascripts/angular-route.min.js" type="text/javascript"></script>
          <script src="javascripts/angular-cookies.min.js" type="text/javascript"></script>
         
@@ -35,12 +37,14 @@
         <script src="javascripts/app.js" type="text/javascript"></script> 
        
         <script src="modules/authentication/controller.js" type="text/javascript"></script>
+        <script src="modules/main/controller.js" type="text/javascript"></script>
         <script src="modules/authentication/service.js" type="text/javascript"></script>
         <script src="modules/home/controller.js" type="text/javascript"></script>
         <script src="modules/payment/controller.js" type="text/javascript"></script>
         <script src="modules/paymentMilestone/controller.js" type="text/javascript"></script>
         <script src="modules/paymentMilestone/service.js" type="text/javascript"></script>
         <script src="modules/leadClosure/controller.js" type="text/javascript"></script>
+        <script src="modules/forecasting/controller.js" type="text/javascript"></script>
         <script src="modules/payment/service.js" type="text/javascript"></script>
         <script src="modules/payment/braintree-angular.js"></script>
         <script type="text/javascript" src="https://js.stripe.com/v2/"></script> 
@@ -58,6 +62,7 @@
         <script src="directives/maxNum.js" type="text/javascript"></script>
         
          <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+         <link href="css/toaster.min.css" rel="stylesheet" type="text/css" />
         <!-- font Awesome -->
         <link href="css/font-awesome.min.css" rel="stylesheet" type="text/css" />
         <!-- Ionicons -->
@@ -88,7 +93,7 @@
 
     </style>
     </head>
-    <body class="skin-blue">
+    <body class="skin-blue" ng-controller="mainCtrl">
         <!-- header start -->
 
   <!-- header logo: style can be found in header.less -->
@@ -167,23 +172,27 @@
                     <!-- /.search form -->
                     <!-- sidebar menu: : style can be found in sidebar.less -->
                     <ul class="sidebar-menu">
-                        <li class="">
+                        <li ng-class="{'active' : checkState('/')}">
                             <a href="/#/">
-                                <i class=" fa fa-list"></i> <span>Dashboard</span>
+                                <i class=" fa fa-dashboard"></i> <span>Dashboard</span>
                             </a>
                         </li>
 
-                       <li class="">
+                        <li ng-class="{'active' : checkState('/paymentMilestone')}">
                             <a href="/#/paymentMilestone">
                                 <i class="fa fa-money"></i> <span>Payment Milestones</span>
                             </a>
                         </li>
-                        <li class="active">
+                        <li ng-class="{'active' : checkState('/leadClosure')}">
                             <a href="/#/leadClosure">
-                                <i class="fa fa-dashboard"></i> <span>Close Lead</span>
+                                <i class="fa fa-bolt"></i> <span>Close Lead</span>
                             </a>
                         </li> 
-                        
+                        <li ng-class="{'active' : checkState('/forecasting')}">
+                            <a href="/#/forecasting">
+                                <i class="fa fa-bullseye"></i> <span>Collection forecasting</span>
+                            </a>
+                        </li> 
                         <!-- <li>
                             <a href="pages/widgets.html">
                                 <i class="fa fa-th"></i> <span>Widgets</span> <small class="badge pull-right bg-green">new</small>
@@ -312,37 +321,8 @@
         <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
         <script src="js/AdminLTE/dashboard.js" type="text/javascript"></script>   
 
-
-        <!-- Data table scripts starts here -->
-       <!-- <script src="javascripts/plugins/datatables/jquery.dataTables.js" type="text/javascript"></script>
-        <script src="javascripts/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>-->
-        <!-- Data table scripts ends here -->
-
-
-
-        <!-- AdminLTE dashboard demo (This is only for demo purposes) 
-        <script src="javascripts/AdminLTE/dashboard.js" type="text/javascript"></script>-->
-
-        <!-- AdminLTE for demo purposes 
-        <script src="javascripts/AdminLTE/demo.js" type="text/javascript"></script>-->
-
     <!-- footer ends here -->
 
-
-        <!-- page script -->
-        <script type="text/javascript">
-            $(function() {
-                //$("#example1").dataTable();
-                /*$('#example2').dataTable({
-                    "bPaginate": true,
-                    "bLengthChange": false,
-                    "bFilter": false,
-                    "bSort": true,
-                    "bInfo": true,
-                    "bAutoWidth": false
-                });*/
-            });
-        </script>
-        
+        <toaster-container toaster-options="{'time-out': 3000,'close-button': true}"></toaster-container>
         </body>
 </html>
